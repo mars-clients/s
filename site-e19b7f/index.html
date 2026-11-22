@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACK MOBILE — Онлайн-игра про Россию</title>
+    <link rel="preconnect" href="https://googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #080b12;
+            --bg-card: #101522;
+            --accent-red: #ff3b30;
+            --accent-coral: #ff5e57;
+            --accent-green: #10b981;
+            --text-main: #ffffff;
+            --text-muted: #8e98b0;
+            --border-subtle: rgba(255, 255, 255, 0.09);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-main); color: var(--text-main); font-family: 'Inter', sans-serif; overflow-x: hidden; line-height: 1.5; padding-bottom: 105px; }
+
+        #preloader { position: fixed; inset: 0; background: #06080e; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s ease; }
+        #preloader.hidden { opacity: 0; visibility: hidden; }
+        .loader-logo { width: 84px; height: 84px; border-radius: 22px; object-fit: cover; box-shadow: 0 0 40px rgba(255, 59, 48, 0.5); margin-bottom: 18px; animation: pulseLogo 1.3s infinite alternate; }
+        .auto-logo-big { width: 84px; height: 84px; border-radius: 22px; background: linear-gradient(135deg, #1b0b0e, #0f131f); border: 2px solid var(--accent-red); box-shadow: 0 0 40px rgba(255, 59, 48, 0.45); display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: 38px; font-weight: 900; color: #fff; margin-bottom: 18px; }
+        .auto-logo-sm { width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, #ff3b30, #990000); display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 900; color: #fff; flex-shrink: 0; }
+        .loader-title { font-family: 'Unbounded', sans-serif; font-weight: 900; font-size: 1.15rem; letter-spacing: 2px; margin-bottom: 16px; text-transform: uppercase; text-align: center; padding: 0 16px; }
+        .loader-bar-wrap { width: 210px; height: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 10px; overflow: hidden; }
+        .loader-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-red), var(--accent-coral)); box-shadow: 0 0 14px var(--accent-red); animation: loadProgress 1.1s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        @keyframes loadProgress { 0% { width: 0%; } 100% { width: 100%; } }
+        @keyframes pulseLogo { from { transform: scale(0.95); } to { transform: scale(1.05); } }
+
+        .top-nav { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 500px; z-index: 200; background: rgba(13, 18, 29, 0.78); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        .brand-box { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .brand-box img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
+        .brand-text { font-family: 'Unbounded', sans-serif; font-size: 12px; font-weight: 900; line-height: 1.15; text-transform: uppercase; color: #fff; }
+        .brand-text span { display: block; color: var(--accent-coral); }
+        .menu-toggle { width: 40px; height: 40px; border-radius: 12px; background: rgba(255, 59, 48, 0.15); border: 1px solid rgba(255, 94, 87, 0.35); color: #fff; font-size: 17px; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .hero-section { position: relative; min-height: 92vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 110px 20px 40px; max-width: 540px; margin: 0 auto; overflow: hidden; }
+        .hero-bg { position: absolute; inset: 0; background: url('https://githubusercontent.com') center top / cover no-repeat; z-index: -2; filter: brightness(0.65); }
+        .hero-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8,11,18,0.4) 0%, rgba(8,11,18,0.75) 55%, #080b12 100%); z-index: -1; }
+        .hero-pill { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.14); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; font-family: 'Unbounded', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 7px 14px; border-radius: 50px; margin-bottom: 18px; width: fit-content; text-transform: uppercase; }
+        .hero-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-green); box-shadow: 0 0 10px var(--accent-green); animation: blink 1.4s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .hero-title { font-family: 'Unbounded', sans-serif; font-size: clamp(28px, 8.5vw, 40px); font-weight: 900; line-height: 1.08; text-transform: uppercase; margin-bottom: 16px; }
+        .hero-title .white { display: block; color: #ffffff; }
+        .hero-title .coral { display: block; color: var(--accent-coral); }
+        .hero-desc { color: #cbd5e1; font-size: 15px; line-height: 1.55; margin-bottom: 26px; }
+        .hero-cta { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #5c1318 0%, #2d090c 100%); border: 1px solid rgba(255, 94, 87, 0.45); color: #ffffff; padding: 19px 24px; border-radius: 18px; font-family: 'Unbounded', sans-serif; font-size: 13.5px; font-weight: 800; text-transform: uppercase; text-decoration: none; box-shadow: 0 12px 35px rgba(255, 59, 48, 0.28); transition: transform 0.2s; }
+        .hero-cta:active { transform: scale(0.98); }
+        .container { max-width: 540px; margin: 0 auto; padding: 0 18px; }
+        .server-mega-card { background: linear-gradient(160deg, #131a2a 0%, #0c101b 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 26px; padding: 24px 22px; margin: 10px 0 42px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65); }
+        .server-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+        .server-tag { font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700; color: var(--accent-coral); letter-spacing: 1px; }
+        .server-bonus-badge { background: rgba(255, 94, 87, 0.15); border: 1px solid rgba(255, 94, 87, 0.4); color: var(--accent-coral); font-family: 'Unbounded', sans-serif; font-size: 10px; font-weight: 800; padding: 5px 10px; border-radius: 8px; }
+        .server-main-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 18px; }
+        .server-name { font-family: 'Unbounded', sans-serif; font-size: 25px; font-weight: 900; color: #fff; line-height: 1.1; }
+        .server-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .online-big-box { text-align: right; }
+        .online-big-num { font-family: 'Unbounded', sans-serif; font-size: 34px; font-weight: 900; color: #ffffff; line-height: 1; }
+        .online-big-max { font-family: 'Unbounded', sans-serif; font-size: 12px; color: var(--accent-green); margin-top: 4px; }
+        .green-track-wrap { position: relative; width: 100%; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: 20px; margin-top: 8px; }
+        .green-track-fill { position: relative; height: 100%; width: 64%; background: linear-gradient(90deg, #059669, #34d399); border-radius: 20px; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+        .green-track-knob { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 50%; background: #34d399; border: 3px solid #080b12; box-shadow: 0 0 14px #10b981; }
+
+        .section-kicker { font-family: 'Unbounded', sans-serif; font-size: 11px; font-weight: 700; color: var(--accent-coral); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+        .section-heading { font-family: 'Unbounded', sans-serif; font-size: 27px; font-weight: 900; text-transform: uppercase; line-height: 1.15; margin-bottom: 12px; }
+        .outline-text { color: transparent; -webkit-text-stroke: 1.5px var(--accent-coral); }
+        .section-lead { color: var(--text-muted); font-size: 14px; margin-bottom: 22px; }
+
+        .carousel-track { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; scrollbar-width: none; }
+        .carousel-track::-webkit-scrollbar { display: none; }
+        .slide-card { flex: 0 0 84%; scroll-snap-align: start; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 24px; overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5); }
+        .slide-badge { position: absolute; top: 14px; left: 14px; background: rgba(8, 11, 18, 0.82); backdrop-filter: blur(8px); border: 1px solid var(--border-subtle); color: #fff; font-family: 'Unbounded', sans-serif; font-size: 10px; font-weight: 700; padding: 6px 12px; border-radius: 50px; z-index: 2; }
+        .slide-card img { width: 100%; height: 215px; object-fit: cover; display: block; }
+        .slide-body { padding: 18px; }
+        .slide-title { font-family: 'Unbounded', sans-serif; font-size: 15.5px; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; color: #fff; }
+        .slide-text { font-size: 13.5px; color: var(--text-muted); line-height: 1.5; }
+        .slide-text strong { color: var(--accent-coral); }
+        .swipe-hint { font-size: 13px; color: var(--text-muted); margin: 8px 0 42px; }
+
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 18px; margin-bottom: 12px; overflow: hidden; }
+        .faq-trigger { width: 100%; padding: 18px; background: none; border: none; color: #fff; font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 600; text-align: left; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 10px; }
+        .faq-arrow { color: var(--accent-coral); transition: transform 0.3s ease; }
+        .faq-content { max-height: 0; overflow: hidden; transition: max-height 0.35s ease; padding: 0 18px; color: var(--text-muted); font-size: 13.5px; }
+
+        .social-card { display: block; background: linear-gradient(145deg, #121929 0%, #0d121f 100%); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 20px; margin-bottom: 16px; text-decoration: none; color: #fff; }
+        .social-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+        .social-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+        .icon-tg { background: rgba(36, 129, 204, 0.2); color: #38bdf8; }
+        .icon-donate { background: rgba(255, 94, 87, 0.2); color: var(--accent-coral); }
+        .social-name { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .official-tag { font-size: 9px; background: rgba(255, 255, 255, 0.08); padding: 3px 7px; border-radius: 6px; color: var(--text-muted); }
+        .social-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+        .social-link-row { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; color: #fff; border-top: 1px solid rgba(255, 255, 255, 0.06); padding-top: 12px; }
+        .social-link-row span { color: var(--accent-coral); }
+
+        /* Улучшенный прозрачный glass-бар снизу */
+        .bottom-nav { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 480px; background: rgba(13, 18, 29, 0.72); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; padding: 8px 10px; display: flex; justify-content: space-around; align-items: center; z-index: 300; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8); }
+        .bnav-item { text-decoration: none; color: var(--text-muted); font-size: 10.5px; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 10px; border-radius: 14px; transition: 0.2s; }
+        .bnav-item.active { color: #fff; background: rgba(255, 59, 48, 0.14); }
+        .bnav-icon { font-size: 17px; }
+        .bnav-bc-wrap { position: relative; top: -18px; display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #fff; font-size: 10.5px; font-weight: 800; }
+        .bnav-bc-circle { width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #ff4d4d, #b30000); box-shadow: 0 6px 22px rgba(255, 59, 48, 0.65); display: flex; align-items: center; justify-content: center; font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 900; color: #fff; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    <div id="preloader">
+        
+            <div class="auto-logo-big">B</div>
+        
+        <div class="loader-title">BLACK MOBILE</div>
+        <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+    </div>
+
+    <nav class="top-nav">
+        <a href="#" class="brand-box">
+            
+                <div class="auto-logo-sm">B</div>
+            
+            <div class="brand-text">BLACK <span>MOBILE</span></div>
+        </a>
+        <a href="#download-zone" class="menu-toggle" title="Скачать игру">⬇</a>
+    </nav>
+
+    <section class="hero-section">
+        <div class="hero-bg"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-pill"><span class="hero-pill-dot"></span> РОЛЕВАЯ ОНЛАЙН-ИГРА</div>
+        <h1 class="hero-title">
+            <span class="white">BLACK</span>
+            <span class="coral">MOBILE</span>
+        </h1>
+        <p class="hero-desc">
+            Становись тем, кем хочешь без ограничений. Получай стартовый бонус <strong>50 000 000 ₽</strong> и <strong>5 000 BC</strong> при входе и начинай свою жизнь на проекте!
+        </p>
+        <a href="#download-zone" class="hero-cta"><span>НАЧАТЬ ИГРАТЬ</span><span>↗</span></a>
+    </section>
+
+    <div class="container">
+        <div class="server-mega-card reveal">
+            <div class="server-header">
+                <span class="server-tag">● МОНИТОРИНГ СЕРВЕРА</span>
+                <span class="server-bonus-badge">БОНУС X2</span>
+            </div>
+            <div class="server-main-row">
+                <div>
+                    <div class="server-name">CHILLI</div>
+                    <div class="server-sub">Основной игровой сервер</div>
+                </div>
+                <div class="online-big-box">
+                    <div class="online-big-num">64</div>
+                    <div class="online-big-max">из 100 игроков</div>
+                </div>
+            </div>
+            <div class="green-track-wrap"><div class="green-track-fill"><div class="green-track-knob"></div></div></div>
+        </div>
+
+        <section id="features" class="reveal">
+            <div class="section-kicker">01 • О ПРОЕКТЕ</div>
+            <h2 class="section-heading">НАША <span class="outline-text">ИГРА</span></h2>
+            <p class="section-lead">Онлайн-игра про Россию: автомобили, работа и общение с другими игроками. Выбирай занятие и развивай персонажа.</p>
+
+            <div class="carousel-track">
+                <div class="slide-card">
+                    <span class="slide-badge">БОНУС 01</span>
+                    <img src="https://githubusercontent.com" alt="Старт">
+                    <div class="slide-body">
+                        <div class="slide-title">БЕШЕНЫЙ START</div>
+                        <p class="slide-text">При первом входе на баланс начисляется <strong>50 000 000 ₽</strong>! Забудь про бедность.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <span class="slide-badge">БОНУС 02</span>
+                    <img src="https://githubusercontent.com" alt="Донат">
+                    <div class="slide-body">
+                        <div class="slide-title">ДОНАТ В ПОДАРОК</div>
+                        <p class="slide-text">Каждый новичок получает <strong>5 000 BC</strong>! Покупай уникальные привилегии сразу.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <span class="slide-badge">СЕЗОН 03</span>
+                    <img src="https://githubusercontent.com" alt="Сезон">
+                    <div class="slide-body">
+                        <div class="slide-title">СЕЗОННЫЙ ПРОПУСК</div>
+                        <p class="slide-text">Проходи уровни и забирай топовые награды в обновлённом сезонном пропуске.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <span class="slide-badge">ТРАНСПОРТ 04</span>
+                    <img src="https://githubusercontent.com" alt="Автопарк">
+                    <div class="slide-body">
+                        <div class="slide-title">ЗАРЯЖЕННЫЙ АВТОПАРК</div>
+                        <p class="slide-text">Наслаждайся ездой на самых свежих и дорогих машинах с проработанной физикой.</p>
+                    </div>
+                </div>
+                <div class="slide-card">
+                    <span class="slide-badge">ОРГАНИЗАЦИИ 05</span>
+                    <img src="https://githubusercontent.com" alt="Фракции">
+                    <div class="slide-body">
+                        <div class="slide-title">СВОБОДА ФРАКЦИЙ</div>
+                        <p class="slide-text">Стань грозой криминального мира или защищай закон в государственных структурах.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="swipe-hint">Листай вбок →</div>
+        </section>
+
+        <section id="faq" class="reveal" style="margin-bottom: 42px;">
+            <div class="section-kicker">02 • ВОПРОСЫ</div>
+            <h2 class="section-heading">О <span class="outline-text">ПРОЕКТЕ</span></h2>
+            <div class="faq-item">
+                <button class="faq-trigger" onclick="toggleFaq(this)"><span>❓ Что такое BLACK MOBILE?</span><span class="faq-arrow">▼</span></button>
+                <div class="faq-content"><p style="padding-bottom:16px;"><strong>BLACK MOBILE</strong> — мобильный CRMP-проект с открытым миром, реальными автомобилями, фракциями и высоким стартовым бонусом.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-trigger" onclick="toggleFaq(this)"><span>🎁 Какой бонус я получу при входе?</span><span class="faq-arrow">▼</span></button>
+                <div class="faq-content"><p style="padding-bottom:16px;">Каждый новый игрок получает <strong>50 000 000 ₽</strong> и <strong>5 000 BC</strong> сразу после регистрации.</p></div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-trigger" onclick="toggleFaq(this)"><span>📱 Как начать играть на сервере CHILLI?</span><span class="faq-arrow">▼</span></button>
+                <div class="faq-content"><p style="padding-bottom:16px;">Скачайте APK-файл ниже, установите лаунчер на Android, выберите сервер <strong>CHILLI</strong> и введите свой игровой никнейм.</p></div>
+            </div>
+        </section>
+
+        <section id="download-zone" class="reveal" style="margin-bottom: 42px;">
+            <div class="section-kicker">03 • УСТАНОВКА</div>
+            <h2 class="section-heading">СКАЧАТЬ <span class="outline-text">ЛАУНЧЕР</span></h2>
+            <p class="section-lead">Актуальная версия клиента для Android. Проверено антивирусами.</p>
+            <a href="https://github.com" class="hero-cta" download><span>СКАЧАТЬ APK-ФАЙЛ ИГРЫ</span><span>⬇</span></a>
+        </section>
+
+        <section id="socials" class="reveal">
+            <div class="section-kicker">04 • СООБЩЕСТВО</div>
+            <h2 class="section-heading">СОЦИАЛЬНЫЕ <span class="outline-text">СЕТИ</span></h2>
+            <p class="section-lead">Новости проекта, покупка игровой валюты и общение с игроками.</p>
+            <a href="tg://resolve?domain=marssov" class="social-card">
+                <div class="social-top">
+                    <div class="social-icon icon-tg">✈️</div>
+                    <div>
+                        <div class="social-name">Telegram <span class="official-tag">ОФИЦИАЛЬНЫЙ</span></div>
+                        <div class="social-sub">Анонсы, розыгрыши и новости игры</div>
+                    </div>
+                </div>
+                <div class="social-link-row"><div>Открыть канал (@marssov)</div><span>↗</span></div>
+            </a>
+            <a href="tg://resolve?domain=marssov" class="social-card">
+                <div class="social-top">
+                    <div class="social-icon icon-donate">💎</div>
+                    <div>
+                        <div class="social-name">Магазин / Донат</div>
+                        <div class="social-sub">Покупка игровой валюты у основателя</div>
+                    </div>
+                </div>
+                <div class="social-link-row"><div>Написать основателю (@marssov)</div><span>↗</span></div>
+            </a>
+        </section>
+    </div>
+
+    <nav class="bottom-nav">
+        <a href="#" class="bnav-item active" onclick="setActiveNav(this)"><span class="bnav-icon">🏠</span><span>Главная</span></a>
+        <a href="#features" class="bnav-item" onclick="setActiveNav(this)"><span class="bnav-icon">🎮</span><span>Об игре</span></a>
+        <a href="tg://resolve?domain=marssov" class="bnav-bc-wrap"><div class="bnav-bc-circle">BC</div><span>Донат</span></a>
+        <a href="#download-zone" class="bnav-item" onclick="setActiveNav(this)"><span class="bnav-icon">⬇️</span><span>Скачать</span></a>
+        <a href="tg://resolve?domain=marssov" class="bnav-item"><span class="bnav-icon">✈️</span><span>Канал</span></a>
+    </nav>
+
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => { document.getElementById('preloader').classList.add('hidden'); revealOnScroll(); }, 950);
+        });
+        function revealOnScroll() {
+            document.querySelectorAll('.reveal').forEach(el => {
+                if (el.getBoundingClientRect().top < window.innerHeight - 35) el.classList.add('active');
+            });
+        }
+        window.addEventListener('scroll', revealOnScroll);
+        function setActiveNav(el) {
+            document.querySelectorAll('.bnav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+        function toggleFaq(button) {
+            const content = button.nextElementSibling;
+            const arrow = button.querySelector('.faq-arrow');
+            if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                content.style.maxHeight = '0px'; arrow.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + 20 + 'px'; arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+    </script>
+</body>
+</html>
